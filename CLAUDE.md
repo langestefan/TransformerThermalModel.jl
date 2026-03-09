@@ -24,10 +24,10 @@ julia --project -e 'using Pkg; Pkg.test()'
 
 ### Formatting and Linting
 
-Julia code is formatted with JuliaFormatter (4-space indent, 92-char margin). Run all pre-commit checks:
+Julia code is formatted with JuliaFormatter (4-space indent, 92-char margin). Always run prek after making changes:
 
 ```bash
-pre-commit run -a
+prek run -a
 ```
 
 To format Julia files only:
@@ -43,6 +43,7 @@ julia --project=docs
 ```
 
 Then in the Julia REPL:
+
 ```julia-repl
 pkg> dev .   # first time only
 julia> using LiveServer; servedocs()
