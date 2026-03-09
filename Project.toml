@@ -1,0 +1,10 @@
+name = "TransformerThermalModel"
+uuid = "78a786ea-24d2-559f-86cb-30af155150dd"
+authors = ["Stefan de Lange <langestefan@msn.com>"]
+version = "0.1.0"
+
+[workspace]
+projects = ["test", "docs"]
+
+[compat]
+julia = "1.10"

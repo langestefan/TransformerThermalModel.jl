@@ -1,0 +1,13 @@
+# Changes here will be overwritten by Copier
+AddPrecommitUpdateCI: true
+Authors: Stefan de Lange <langestefan@msn.com>
+JuliaMinVersion: '1.10'
+License: MIT
+LicenseCopyrightHolders: Stefan de Lange
+PackageName: TransformerThermalModel
+PackageOwner: langestefan
+PackageUUID: 78a786ea-24d2-559f-86cb-30af155150dd
+StrategyConfirmIncluded: false
+StrategyLevel: 3
+StrategyReviewExcluded: true
+_src_path: /home/langestefan/.julia/packages/BestieTemplate/fOzc4
