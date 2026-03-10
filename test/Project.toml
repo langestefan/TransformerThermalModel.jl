@@ -1,9 +1,10 @@
 [deps]
-TransformerThermalModel = "78a786ea-24d2-559f-86cb-30af155150dd"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
-TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
+TransformerThermalModel = "78a786ea-24d2-559f-86cb-30af155150dd"
 
 [sources]
-TransformerThermalModel = {path = ".."}
+TransformerThermalModel = {path = "/home/langestefan/dev/projects/2026/transformer-thermal/TransformerThermalModel.jl"}
