@@ -75,11 +75,8 @@ end
         ),
     )
     t0 = DateTime(2021, 1, 1)
-    profile = InputProfile(
-        [t0, t0 + Hour(1), t0 + Hour(2)],
-        [0.0, 0.0, 0.0],
-        [5.0, 5.0, 5.0],
-    )
+    profile =
+        InputProfile([t0, t0 + Hour(1), t0 + Hour(2)], [0.0, 0.0, 0.0], [5.0, 5.0, 5.0])
     result = simulate(spec, profile)
     @test result.top_oil ≈ [5.0, 5.0, 5.0] atol = 1e-6
     @test result.hot_spot ≈ [5.0, 5.0, 5.0] atol = 1e-6
@@ -100,11 +97,8 @@ end
     θ_a = 20.0
     t0 = DateTime(2021, 1, 1)
     # K = nom_load / nom_load = 1.0  →  steady-state
-    profile = InputProfile(
-        [t0, t0 + Day(30), t0 + Day(60)],
-        [1.0, 1.0, 1.0],
-        [θ_a, θ_a, θ_a],
-    )
+    profile =
+        InputProfile([t0, t0 + Day(30), t0 + Day(60)], [1.0, 1.0, 1.0], [θ_a, θ_a, θ_a])
     result = simulate(spec, profile)
     # At K=1, R→0: Δθ_o∞ = Δθ_or*(1)^x = Δθ_or = 60
     # δθ_H∞ = W∞ - O∞ = k₂₁*g_r_eff - (k₂₁-1)*g_r_eff = g_r_eff = H*g_r = 1.3*17 = 22.1
@@ -120,10 +114,8 @@ end
 # Reference comparison against Python test_expected_rise_distribution
 # ---------------------------------------------------------------------------
 
-@testitem "distribution τ-step profile — reference values" tags = [:unit, :model, :validation] setup = [
-    DistSpec,
-    ProfileHelpers,
-] begin
+@testitem "distribution τ-step profile — reference values" tags =
+    [:unit, :model, :validation] setup = [DistSpec, ProfileHelpers] begin
     # τ_time = k₁₁ * τ_oil = 1.0 * 180 = 180 min for distribution
     τ_time = spec_dist.k₁₁ * spec_dist.τ_oil
     K = 1000.0 / spec_dist.nom_load   # per-unit load
@@ -180,10 +172,8 @@ end
 # Reference comparison against Python test_expected_rise_onan
 # ---------------------------------------------------------------------------
 
-@testitem "ONAN τ-step profile — reference values" tags = [:unit, :model, :validation] setup = [
-    OnanSpec,
-    ProfileHelpers,
-] begin
+@testitem "ONAN τ-step profile — reference values" tags = [:unit, :model, :validation] setup =
+    [OnanSpec, ProfileHelpers] begin
     # τ_time = k₁₁ * τ_oil = 0.5 * 210 = 105 min
     τ_time = spec_onan.k₁₁ * spec_onan.τ_oil
     K = 1000.0 / spec_onan.nom_load
@@ -240,10 +230,8 @@ end
 # Reference comparison against Python test_expected_rise_onaf
 # ---------------------------------------------------------------------------
 
-@testitem "ONAF τ-step profile — reference values" tags = [:unit, :model, :validation] setup = [
-    OnafSpec,
-    ProfileHelpers,
-] begin
+@testitem "ONAF τ-step profile — reference values" tags = [:unit, :model, :validation] setup =
+    [OnafSpec, ProfileHelpers] begin
     # τ_time = k₁₁ * τ_oil = 0.5 * 150 = 75 min
     τ_time = spec_onaf.k₁₁ * spec_onaf.τ_oil
     K = 1000.0 / spec_onaf.nom_load
@@ -309,12 +297,7 @@ end
             load_loss = 1000.0,
             nom_load = 1000.0,
             cooler = ONAF,
-            overrides = ThermalOverrides(
-                Δθ_or = 38.3,
-                g_r = 14.5,
-                H = 1.4,
-                Δθ_amb = 0.0,
-            ),
+            overrides = ThermalOverrides(Δθ_or = 38.3, g_r = 14.5, H = 1.4, Δθ_amb = 0.0),
         ),
     )
 
@@ -329,7 +312,7 @@ end
     for i = 1:(length(breakpoints)-1)
         start_min = breakpoints[i]
         stop_min = breakpoints[i+1]
-        for step = 1:((stop_min - start_min) ÷ 5)
+        for step = 1:((stop_min-start_min)÷5)
             push!(times, t0 + Minute(start_min + step * 5))
             push!(loads, load_factors[i])   # already per-unit (nom_load=1000, load=factor*1000/1000)
         end
@@ -367,19 +350,14 @@ end
 # InitialLoad initial condition
 # ---------------------------------------------------------------------------
 
-@testitem "InitialLoad initial condition — steady state at step 1" tags = [:unit, :model] setup = [
-    OnanSpec,
-] begin
+@testitem "InitialLoad initial condition — steady state at step 1" tags = [:unit, :model] setup =
+    [OnanSpec] begin
     using Dates
     # Start at K=2/3 steady state, then keep the same load.
     # Steps 1 and 2 should both be at (or very near) the same temperature.
     K = 1000.0 / spec_onan.nom_load
     t0 = DateTime(2021, 1, 1)
-    profile = InputProfile(
-        [t0, t0 + Hour(1), t0 + Hour(2)],
-        [K, K, K],
-        [20.0, 20.0, 20.0],
-    )
+    profile = InputProfile([t0, t0 + Hour(1), t0 + Hour(2)], [K, K, K], [20.0, 20.0, 20.0])
     result = simulate(spec_onan, profile, InitialLoad(K))
     # If already at steady state, top-oil and hot-spot should barely change
     @test result.top_oil[1] ≈ result.top_oil[2] atol = 0.01

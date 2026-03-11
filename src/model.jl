@@ -42,9 +42,8 @@ function _build_thermal_model()
     W_inf = k₂₁_p * g
     O_inf = (k₂₁_p - 1) * g
 
-    params = [
-        τ_oil_p, τ_w_p, Δθ_or_eff_p, g_r_eff_p, k₁₁_p, k₂₁_p, k₂₂_p, x_oil_p, y_wdg_p, R_p,
-    ]
+    params =
+        [τ_oil_p, τ_w_p, Δθ_or_eff_p, g_r_eff_p, k₁₁_p, k₂₁_p, k₂₂_p, x_oil_p, y_wdg_p, R_p]
 
     # Compile f_inf([K], p) → [Δθ_o∞, W∞, O∞].
     # Built before mtkcompile since targets are state-independent.
@@ -230,7 +229,19 @@ function simulate(
         Δθ_o_vec[k] = x[idx_Δθ_o]
         δθ_H_vec[k] = x[idx_W] - x[idx_O]
         if k < n
-            _etdrk2_step!(x_new, x, f_inf, profile.load[k+1], a_oil, a_w, a_o, p, idx_Δθ_o, idx_W, idx_O)
+            _etdrk2_step!(
+                x_new,
+                x,
+                f_inf,
+                profile.load[k+1],
+                a_oil,
+                a_w,
+                a_o,
+                p,
+                idx_Δθ_o,
+                idx_W,
+                idx_O,
+            )
             x, x_new = x_new, x
         end
     end
@@ -282,8 +293,16 @@ function thermal_step_function(Δt::Real)
             last_p[] = p
         end
         a_oil, a_w, a_o = cached[]
-        x_new = similar(x)
-        _etdrk2_step!(x_new, x, f_inf, u[1], a_oil, a_w, a_o, p, idx_Δθ_o, idx_W, idx_O)
+        x_inf = f_inf([u[1]], p)
+        # Compute new state values; let Julia infer the element type so this
+        # works for both Float64 arrays (simulate) and JuMP variable arrays.
+        Δθ_o_new = x_inf[1] + (x[idx_Δθ_o] - x_inf[1]) * a_oil
+        W_new = x_inf[2] + (x[idx_W] - x_inf[2]) * a_w
+        O_new = x_inf[3] + (x[idx_O] - x_inf[3]) * a_o
+        x_new = similar(x, typeof(Δθ_o_new))
+        x_new[idx_Δθ_o] = Δθ_o_new
+        x_new[idx_W] = W_new
+        x_new[idx_O] = O_new
         return x_new
     end
 end
