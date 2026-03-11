@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 # ---------------------------------------------------------------------------
-# ThermalOverrides 
+# ThermalOverrides
 # ---------------------------------------------------------------------------
 
 @testitem "ThermalOverrides default constructor" tags = [:unit, :fast] begin

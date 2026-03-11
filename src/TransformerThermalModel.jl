@@ -9,6 +9,7 @@ using Dates
 include("cooler.jl")
 include("types.jl")
 include("transformer.jl")
+include("model.jl")
 
 export CoolerType, ONAN, ONAF
 export PaperInsulationType, NormalPaper, ThermallyUpgradedPaper
@@ -22,5 +23,7 @@ export ThermalResult, ThreeWindingThermalResult
 export ThermalOverrides
 export PowerTransformerParams, DistributionTransformerParams, ThreeWindingTransformerParams
 export PowerTransformer, DistributionTransformer, ThreeWindingTransformer
+export simulate
+export thermal_step_function, thermal_state_indices, thermal_params
 
 end
