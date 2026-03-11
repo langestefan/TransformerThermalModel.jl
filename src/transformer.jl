@@ -6,35 +6,21 @@
 # Default parameter sets (IEC 60076-7 / empirical)
 # ---------------------------------------------------------------------------
 
-const _POWER_ONAN_DEFAULTS = (
-    τ_oil = 210.0,
-    τ_w = 10.0,
+const _SHARED_POWER_DEFAULTS = (
     Δθ_or = 60.0,
     g_r = 17.0,
     H = 1.3,
     k₁₁ = 0.5,
     k₂₁ = 2.0,
     k₂₂ = 2.0,
-    x = 0.8,
-    y = 1.3,
-    end_temp_reduction = 0.0,
-    amb_temp_surcharge = 0.0,
+    x_oil = 0.8,
+    y_wdg = 1.3,
+    Δθ_end = 0.0,
+    Δθ_amb = 0.0,
 )
 
-const _POWER_ONAF_DEFAULTS = (
-    τ_oil = 150.0,
-    τ_w = 7.0,
-    Δθ_or = 60.0,
-    g_r = 17.0,
-    H = 1.3,
-    k₁₁ = 0.5,
-    k₂₁ = 2.0,
-    k₂₂ = 2.0,
-    x = 0.8,
-    y = 1.3,
-    end_temp_reduction = 0.0,
-    amb_temp_surcharge = 0.0,
-)
+const _POWER_ONAN_DEFAULTS = merge(_SHARED_POWER_DEFAULTS, (τ_oil = 210.0, τ_w = 10.0))
+const _POWER_ONAF_DEFAULTS = merge(_SHARED_POWER_DEFAULTS, (τ_oil = 150.0, τ_w = 7.0))
 
 const _DISTRIBUTION_DEFAULTS = (
     τ_oil = 180.0,
@@ -45,35 +31,25 @@ const _DISTRIBUTION_DEFAULTS = (
     k₁₁ = 1.0,
     k₂₁ = 1.0,
     k₂₂ = 2.0,
-    x = 0.8,
-    y = 1.6,
-    end_temp_reduction = 0.0,
-    amb_temp_surcharge = 10.0,  # indoor installation surcharge
+    x_oil = 0.8,
+    y_wdg = 1.6,
+    Δθ_end = 0.0,
+    Δθ_amb = 10.0,  # indoor installation surcharge
 )
 
-const _THREE_WINDING_ONAN_DEFAULTS = (
-    τ_oil = 210.0,
+const _SHARED_THREE_WINDING_DEFAULTS = (
     Δθ_or = 60.0,
     k₁₁ = 0.5,
     k₂₁ = 2.0,
     k₂₂ = 2.0,
-    x = 0.8,
-    y = 1.3,
-    end_temp_reduction = 0.0,
-    amb_temp_surcharge = 0.0,
+    x_oil = 0.8,
+    y_wdg = 1.3,
+    Δθ_end = 0.0,
+    Δθ_amb = 0.0,
 )
 
-const _THREE_WINDING_ONAF_DEFAULTS = (
-    τ_oil = 150.0,
-    Δθ_or = 60.0,
-    k₁₁ = 0.5,
-    k₂₁ = 2.0,
-    k₂₂ = 2.0,
-    x = 0.8,
-    y = 1.3,
-    end_temp_reduction = 0.0,
-    amb_temp_surcharge = 0.0,
-)
+const _THREE_WINDING_ONAN_DEFAULTS = merge(_SHARED_THREE_WINDING_DEFAULTS, (τ_oil = 210.0,))
+const _THREE_WINDING_ONAF_DEFAULTS = merge(_SHARED_THREE_WINDING_DEFAULTS, (τ_oil = 150.0,))
 
 # ---------------------------------------------------------------------------
 # ThermalOverrides — optional per-field parameter overrides
@@ -94,10 +70,10 @@ struct ThermalOverrides
     k₁₁::Union{Float64,Nothing}
     k₂₁::Union{Float64,Nothing}
     k₂₂::Union{Float64,Nothing}
-    x::Union{Float64,Nothing}
-    y::Union{Float64,Nothing}
-    end_temp_reduction::Union{Float64,Nothing}
-    amb_temp_surcharge::Union{Float64,Nothing}
+    x_oil::Union{Float64,Nothing}
+    y_wdg::Union{Float64,Nothing}
+    Δθ_end::Union{Float64,Nothing}
+    Δθ_amb::Union{Float64,Nothing}
 end
 
 function ThermalOverrides(;
@@ -109,10 +85,10 @@ function ThermalOverrides(;
     k₁₁ = nothing,
     k₂₁ = nothing,
     k₂₂ = nothing,
-    x = nothing,
-    y = nothing,
-    end_temp_reduction = nothing,
-    amb_temp_surcharge = nothing,
+    x_oil = nothing,
+    y_wdg = nothing,
+    Δθ_end = nothing,
+    Δθ_amb = nothing,
 )
     return ThermalOverrides(
         τ_oil,
@@ -123,10 +99,10 @@ function ThermalOverrides(;
         k₁₁,
         k₂₁,
         k₂₂,
-        x,
-        y,
-        end_temp_reduction,
-        amb_temp_surcharge,
+        x_oil,
+        y_wdg,
+        Δθ_end,
+        Δθ_amb,
     )
 end
 
@@ -198,6 +174,27 @@ end
 # Constructor functions
 # ---------------------------------------------------------------------------
 
+function _build_spec(no_load_loss, load_loss, nom_load, add_surcharge_to_ambient, ov, d)
+    return TransformerSpec(
+        no_load_loss = no_load_loss,
+        load_loss = load_loss,
+        nom_load = nom_load,
+        add_surcharge_to_ambient = add_surcharge_to_ambient,
+        τ_oil = something(ov.τ_oil, d.τ_oil),
+        τ_w = something(ov.τ_w, d.τ_w),
+        Δθ_or = something(ov.Δθ_or, d.Δθ_or),
+        g_r = something(ov.g_r, d.g_r),
+        H = something(ov.H, d.H),
+        k₁₁ = something(ov.k₁₁, d.k₁₁),
+        k₂₁ = something(ov.k₂₁, d.k₂₁),
+        k₂₂ = something(ov.k₂₂, d.k₂₂),
+        x_oil = something(ov.x_oil, d.x_oil),
+        y_wdg = something(ov.y_wdg, d.y_wdg),
+        Δθ_end = something(ov.Δθ_end, d.Δθ_end),
+        Δθ_amb = something(ov.Δθ_amb, d.Δθ_amb),
+    )
+end
+
 """
     PowerTransformer(params::PowerTransformerParams) -> TransformerSpec
 
@@ -221,24 +218,13 @@ spec = PowerTransformer(params)
 """
 function PowerTransformer(params::PowerTransformerParams)
     d = params.cooler == ONAN ? _POWER_ONAN_DEFAULTS : _POWER_ONAF_DEFAULTS
-    ov = params.overrides
-    return TransformerSpec(
-        no_load_loss = params.no_load_loss,
-        load_loss = params.load_loss,
-        nom_load = params.nom_load,
-        add_surcharge_to_ambient = true,
-        τ_oil = something(ov.τ_oil, d.τ_oil),
-        τ_w = something(ov.τ_w, d.τ_w),
-        Δθ_or = something(ov.Δθ_or, d.Δθ_or),
-        g_r = something(ov.g_r, d.g_r),
-        H = something(ov.H, d.H),
-        k₁₁ = something(ov.k₁₁, d.k₁₁),
-        k₂₁ = something(ov.k₂₁, d.k₂₁),
-        k₂₂ = something(ov.k₂₂, d.k₂₂),
-        x = something(ov.x, d.x),
-        y = something(ov.y, d.y),
-        end_temp_reduction = something(ov.end_temp_reduction, d.end_temp_reduction),
-        amb_temp_surcharge = something(ov.amb_temp_surcharge, d.amb_temp_surcharge),
+    return _build_spec(
+        params.no_load_loss,
+        params.load_loss,
+        params.nom_load,
+        true,
+        params.overrides,
+        d,
     )
 end
 
@@ -257,25 +243,13 @@ spec = DistributionTransformer(params)
 ```
 """
 function DistributionTransformer(params::DistributionTransformerParams)
-    d = _DISTRIBUTION_DEFAULTS
-    ov = params.overrides
-    return TransformerSpec(
-        no_load_loss = params.no_load_loss,
-        load_loss = params.load_loss,
-        nom_load = params.nom_load,
-        add_surcharge_to_ambient = false,
-        τ_oil = something(ov.τ_oil, d.τ_oil),
-        τ_w = something(ov.τ_w, d.τ_w),
-        Δθ_or = something(ov.Δθ_or, d.Δθ_or),
-        g_r = something(ov.g_r, d.g_r),
-        H = something(ov.H, d.H),
-        k₁₁ = something(ov.k₁₁, d.k₁₁),
-        k₂₁ = something(ov.k₂₁, d.k₂₁),
-        k₂₂ = something(ov.k₂₂, d.k₂₂),
-        x = something(ov.x, d.x),
-        y = something(ov.y, d.y),
-        end_temp_reduction = something(ov.end_temp_reduction, d.end_temp_reduction),
-        amb_temp_surcharge = something(ov.amb_temp_surcharge, d.amb_temp_surcharge),
+    return _build_spec(
+        params.no_load_loss,
+        params.load_loss,
+        params.nom_load,
+        false,
+        params.overrides,
+        _DISTRIBUTION_DEFAULTS,
     )
 end
 
@@ -300,15 +274,15 @@ function ThreeWindingTransformer(params::ThreeWindingTransformerParams)
     ov = params.overrides
     return ThreeWindingTransformerSpec(
         no_load_loss = params.no_load_loss,
-        amb_temp_surcharge = something(ov.amb_temp_surcharge, d.amb_temp_surcharge),
+        Δθ_amb = something(ov.Δθ_amb, d.Δθ_amb),
         τ_oil = something(ov.τ_oil, d.τ_oil),
         Δθ_or = something(ov.Δθ_or, d.Δθ_or),
         k₁₁ = something(ov.k₁₁, d.k₁₁),
         k₂₁ = something(ov.k₂₁, d.k₂₁),
         k₂₂ = something(ov.k₂₂, d.k₂₂),
-        x = something(ov.x, d.x),
-        y = something(ov.y, d.y),
-        end_temp_reduction = something(ov.end_temp_reduction, d.end_temp_reduction),
+        x_oil = something(ov.x_oil, d.x_oil),
+        y_wdg = something(ov.y_wdg, d.y_wdg),
+        Δθ_end = something(ov.Δθ_end, d.Δθ_end),
         lv_winding = params.lv_winding,
         mv_winding = params.mv_winding,
         hv_winding = params.hv_winding,

@@ -37,7 +37,7 @@ All thermal parameters follow IEC 60076-7 notation.
 - `no_load_loss`: Iron/core loss [W]
 - `load_loss`: Copper/short-circuit loss at rated load [W]
 - `nom_load`: Nominal current, secondary side [A]
-- `amb_temp_surcharge`: Constant temperature offset to account for enclosure or
+- `Δθ_amb`: Constant ambient temperature surcharge to account for enclosure or
   environment [K]
 - `add_surcharge_to_ambient`: If `true` (power transformer), the surcharge is added
   to the ambient temperature as a fixed offset. If `false` (distribution transformer),
@@ -47,9 +47,9 @@ All thermal parameters follow IEC 60076-7 notation.
 - `k₁₁`: IEC oil constant k₁₁ [-]
 - `k₂₁`: IEC winding constant k₂₁ [-]
 - `k₂₂`: IEC winding constant k₂₂ [-]
-- `x`: Oil exponent x [-]
-- `y`: Winding exponent y [-]
-- `end_temp_reduction`: Reduction applied to the steady-state end temperature [K]
+- `x_oil`: Oil viscosity exponent [-]
+- `y_wdg`: Winding gradient exponent [-]
+- `Δθ_end`: Reduction applied to the steady-state end temperature [K]
 - `g_r`: Winding-to-oil temperature gradient gᵣ [K]
 - `τ_w`: Winding thermal time constant τ_w [min]
 - `H`: Hot-spot factor H [-]
@@ -58,16 +58,16 @@ All thermal parameters follow IEC 60076-7 notation.
     no_load_loss::Float64
     load_loss::Float64
     nom_load::Float64
-    amb_temp_surcharge::Float64
+    Δθ_amb::Float64
     add_surcharge_to_ambient::Bool
     τ_oil::Float64
     Δθ_or::Float64
     k₁₁::Float64
     k₂₁::Float64
     k₂₂::Float64
-    x::Float64
-    y::Float64
-    end_temp_reduction::Float64
+    x_oil::Float64
+    y_wdg::Float64
+    Δθ_end::Float64
     g_r::Float64
     τ_w::Float64
     H::Float64
@@ -100,15 +100,15 @@ pairwise losses using the IEC star-circuit decomposition.
 
 # Fields
 - `no_load_loss`: Iron/core loss [W]
-- `amb_temp_surcharge`: Constant temperature surcharge [K]
+- `Δθ_amb`: Constant ambient temperature surcharge [K]
 - `τ_oil`: Oil thermal time constant τₒ [min]
 - `Δθ_or`: Rated top-oil temperature rise Δθₒᵣ [K]
 - `k₁₁`: IEC oil constant k₁₁ [-]
 - `k₂₁`: IEC winding constant k₂₁ [-]
 - `k₂₂`: IEC winding constant k₂₂ [-]
-- `x`: Oil exponent x [-]
-- `y`: Winding exponent y [-]
-- `end_temp_reduction`: Reduction applied to the steady-state end temperature [K]
+- `x_oil`: Oil viscosity exponent [-]
+- `y_wdg`: Winding gradient exponent [-]
+- `Δθ_end`: Reduction applied to the steady-state end temperature [K]
 - `lv_winding`, `mv_winding`, `hv_winding`: Per-winding specifications
 - `load_loss_hv_lv`: Load loss between HV and LV windings [W]
 - `load_loss_hv_mv`: Load loss between HV and MV windings [W]
@@ -117,15 +117,15 @@ pairwise losses using the IEC star-circuit decomposition.
 """
 @kwdef struct ThreeWindingTransformerSpec
     no_load_loss::Float64
-    amb_temp_surcharge::Float64
+    Δθ_amb::Float64
     τ_oil::Float64
     Δθ_or::Float64
     k₁₁::Float64
     k₂₁::Float64
     k₂₂::Float64
-    x::Float64
-    y::Float64
-    end_temp_reduction::Float64
+    x_oil::Float64
+    y_wdg::Float64
+    Δθ_end::Float64
     lv_winding::WindingSpec
     mv_winding::WindingSpec
     hv_winding::WindingSpec

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 # ---------------------------------------------------------------------------
-# ThermalOverrides
+# ThermalOverrides 
 # ---------------------------------------------------------------------------
 
 @testitem "ThermalOverrides default constructor" tags = [:unit, :fast] begin
@@ -17,10 +17,10 @@
     @test ov.k₁₁ === nothing
     @test ov.k₂₁ === nothing
     @test ov.k₂₂ === nothing
-    @test ov.x === nothing
-    @test ov.y === nothing
-    @test ov.end_temp_reduction === nothing
-    @test ov.amb_temp_surcharge === nothing
+    @test ov.x_oil === nothing
+    @test ov.y_wdg === nothing
+    @test ov.Δθ_end === nothing
+    @test ov.Δθ_amb === nothing
 end
 
 @testitem "ThermalOverrides keyword constructor" tags = [:unit, :fast] begin
@@ -52,10 +52,10 @@ end
     @test spec.k₁₁ == 0.5
     @test spec.k₂₁ == 2.0
     @test spec.k₂₂ == 2.0
-    @test spec.x == 0.8
-    @test spec.y == 1.3
-    @test spec.end_temp_reduction == 0.0
-    @test spec.amb_temp_surcharge == 0.0
+    @test spec.x_oil == 0.8
+    @test spec.y_wdg == 1.3
+    @test spec.Δθ_end == 0.0
+    @test spec.Δθ_amb == 0.0
     @test spec.add_surcharge_to_ambient == true
 end
 
@@ -81,11 +81,11 @@ end
             no_load_loss = 200.0,
             load_loss = 1000.0,
             nom_load = 1500.0,
-            overrides = ThermalOverrides(H = 1.5, amb_temp_surcharge = 5.0),
+            overrides = ThermalOverrides(H = 1.5, Δθ_amb = 5.0),
         ),
     )
     @test spec.H == 1.5
-    @test spec.amb_temp_surcharge == 5.0
+    @test spec.Δθ_amb == 5.0
     @test spec.τ_oil == 210.0  # default unchanged
 end
 
@@ -113,10 +113,10 @@ end
     @test spec.k₁₁ == 1.0
     @test spec.k₂₁ == 1.0
     @test spec.k₂₂ == 2.0
-    @test spec.x == 0.8
-    @test spec.y == 1.6
-    @test spec.end_temp_reduction == 0.0
-    @test spec.amb_temp_surcharge == 10.0
+    @test spec.x_oil == 0.8
+    @test spec.y_wdg == 1.6
+    @test spec.Δθ_end == 0.0
+    @test spec.Δθ_amb == 10.0
     @test spec.add_surcharge_to_ambient == false
 end
 
@@ -170,7 +170,7 @@ end
     @test spec.τ_oil == 210.0
     @test spec.Δθ_or == 60.0
     @test spec.k₁₁ == 0.5
-    @test spec.amb_temp_surcharge == 0.0
+    @test spec.Δθ_amb == 0.0
     @test spec.load_loss_total === nothing
 end
 

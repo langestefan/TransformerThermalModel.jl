@@ -19,10 +19,10 @@ Oil Natural Air Natural cooling.
 | k₁₁ | `k₁₁` | 0.5 | — | Oil time constant correction factor |
 | k₂₁ | `k₂₁` | 2 | — | Winding hot-spot factor (initial) |
 | k₂₂ | `k₂₂` | 2 | — | Winding hot-spot factor (final) |
-| x | `x` | 0.8 | — | Oil exponent |
-| y | `y` | 1.3 | — | Winding exponent |
-| — | `end_temp_reduction` | 0 | K | Reduction of steady-state end temperature |
-| — | `amb_temp_surcharge` | 0 | K | Ambient temperature surcharge |
+| x | `x_oil` | 0.8 | — | Oil viscosity exponent |
+| y | `y_wdg` | 1.3 | — | Winding gradient exponent |
+| Δθ_end | `Δθ_end` | 0 | K | Steady-state end temperature correction |
+| Δθ_amb | `Δθ_amb` | 0 | K | Ambient temperature surcharge |
 
 ---
 
@@ -40,10 +40,10 @@ Oil Natural Air Forced cooling.
 | k₁₁ | `k₁₁` | 0.5 | — | Oil time constant correction factor |
 | k₂₁ | `k₂₁` | 2 | — | Winding hot-spot factor (initial) |
 | k₂₂ | `k₂₂` | 2 | — | Winding hot-spot factor (final) |
-| x | `x` | 0.8 | — | Oil exponent |
-| y | `y` | 1.3 | — | Winding exponent |
-| — | `end_temp_reduction` | 0 | K | Reduction of steady-state end temperature |
-| — | `amb_temp_surcharge` | 0 | K | Ambient temperature surcharge |
+| x | `x_oil` | 0.8 | — | Oil viscosity exponent |
+| y | `y_wdg` | 1.3 | — | Winding gradient exponent |
+| Δθ_end | `Δθ_end` | 0 | K | Steady-state end temperature correction |
+| Δθ_amb | `Δθ_amb` | 0 | K | Ambient temperature surcharge |
 
 ---
 
@@ -62,10 +62,10 @@ Distribution transformers are ONAN only. A default ambient temperature surcharge
 | k₁₁ | `k₁₁` | 1.0 | — | Oil time constant correction factor |
 | k₂₁ | `k₂₁` | 1 | — | Winding hot-spot factor (initial) |
 | k₂₂ | `k₂₂` | 2 | — | Winding hot-spot factor (final) |
-| x | `x` | 0.8 | — | Oil exponent |
-| y | `y` | 1.6 | — | Winding exponent |
-| — | `end_temp_reduction` | 0 | K | Reduction of steady-state end temperature |
-| — | `amb_temp_surcharge` | 10 | K | Ambient temperature surcharge (indoor) |
+| x | `x_oil` | 0.8 | — | Oil viscosity exponent |
+| y | `y_wdg` | 1.6 | — | Winding gradient exponent |
+| Δθ_end | `Δθ_end` | 0 | K | Steady-state end temperature correction |
+| Δθ_amb | `Δθ_amb` | 10 | K | Ambient temperature surcharge (indoor) |
 
 ---
 
@@ -81,10 +81,10 @@ supplied explicitly in each [`WindingSpec`](@ref).
 | k₁₁ | `k₁₁` | 0.5 | — | Oil time constant correction factor |
 | k₂₁ | `k₂₁` | 2 | — | Winding hot-spot factor (initial) |
 | k₂₂ | `k₂₂` | 2 | — | Winding hot-spot factor (final) |
-| x | `x` | 0.8 | — | Oil exponent |
-| y | `y` | 1.3 | — | Winding exponent |
-| — | `end_temp_reduction` | 0 | K | Reduction of steady-state end temperature |
-| — | `amb_temp_surcharge` | 0 | K | Ambient temperature surcharge |
+| x | `x_oil` | 0.8 | — | Oil viscosity exponent |
+| y | `y_wdg` | 1.3 | — | Winding gradient exponent |
+| Δθ_end | `Δθ_end` | 0 | K | Steady-state end temperature correction |
+| Δθ_amb | `Δθ_amb` | 0 | K | Ambient temperature surcharge |
 
 ---
 
@@ -97,7 +97,7 @@ supplied explicitly in each [`WindingSpec`](@ref).
 | k₁₁ | `k₁₁` | 0.5 | — | Oil time constant correction factor |
 | k₂₁ | `k₂₁` | 2 | — | Winding hot-spot factor (initial) |
 | k₂₂ | `k₂₂` | 2 | — | Winding hot-spot factor (final) |
-| x | `x` | 0.8 | — | Oil exponent |
-| y | `y` | 1.3 | — | Winding exponent |
-| — | `end_temp_reduction` | 0 | K | Reduction of steady-state end temperature |
-| — | `amb_temp_surcharge` | 0 | K | Ambient temperature surcharge |
+| x | `x_oil` | 0.8 | — | Oil viscosity exponent |
+| y | `y_wdg` | 1.3 | — | Winding gradient exponent |
+| Δθ_end | `Δθ_end` | 0 | K | Steady-state end temperature correction |
+| Δθ_amb | `Δθ_amb` | 0 | K | Ambient temperature surcharge |
