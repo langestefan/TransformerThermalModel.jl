@@ -154,7 +154,7 @@ struct InputProfile
     ambient::Vector{Float64}
     top_oil::Union{Vector{Float64},Nothing}
 
-    function InputProfile(time, load, ambient, top_oil=nothing)
+    function InputProfile(time, load, ambient, top_oil = nothing)
         time = collect(DateTime, time)
         load = collect(Float64, load)
         ambient = collect(Float64, ambient)
@@ -164,7 +164,8 @@ struct InputProfile
         length(ambient) == n ||
             throw(ArgumentError("ambient length $(length(ambient)) ≠ time length $n"))
         issorted(time) || throw(ArgumentError("time must be sorted"))
-        any(<(0), load) && throw(ArgumentError("load profile must not contain negative values"))
+        any(<(0), load) &&
+            throw(ArgumentError("load profile must not contain negative values"))
         if top_oil !== nothing
             top_oil = collect(Float64, top_oil)
             length(top_oil) == n ||
@@ -193,7 +194,14 @@ struct ThreeWindingInputProfile
     ambient::Vector{Float64}
     top_oil::Union{Vector{Float64},Nothing}
 
-    function ThreeWindingInputProfile(time, load_hv, load_mv, load_lv, ambient, top_oil=nothing)
+    function ThreeWindingInputProfile(
+        time,
+        load_hv,
+        load_mv,
+        load_lv,
+        ambient,
+        top_oil = nothing,
+    )
         time = collect(DateTime, time)
         load_hv = collect(Float64, load_hv)
         load_mv = collect(Float64, load_mv)
@@ -201,7 +209,10 @@ struct ThreeWindingInputProfile
         ambient = collect(Float64, ambient)
         n = length(time)
         for (name, v) in (
-            ("load_hv", load_hv), ("load_mv", load_mv), ("load_lv", load_lv), ("ambient", ambient)
+            ("load_hv", load_hv),
+            ("load_mv", load_mv),
+            ("load_lv", load_lv),
+            ("ambient", ambient),
         )
             length(v) == n ||
                 throw(ArgumentError("$name length $(length(v)) ≠ time length $n"))

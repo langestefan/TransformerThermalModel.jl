@@ -19,6 +19,8 @@ export TransformerSpec, WindingSpec, ThreeWindingTransformerSpec
 export InputProfile, ThreeWindingInputProfile
 export ThermalResult, ThreeWindingThermalResult
 
+export ThermalOverrides
+export PowerTransformerParams, DistributionTransformerParams, ThreeWindingTransformerParams
 export PowerTransformer, DistributionTransformer, ThreeWindingTransformer
 
 end
