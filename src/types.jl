@@ -1,267 +1,261 @@
 # SPDX-FileCopyrightText: Contributors to the Transformer Thermal Model project
-#
 # SPDX-License-Identifier: MPL-2.0
 
-using Dates
+# ---------------------------------------------------------------------------
+# Abstract types
+# ---------------------------------------------------------------------------
+
+abstract type InitialState end
+abstract type AbstractTransformerSpec end
 
 # ---------------------------------------------------------------------------
 # Initial state
 # ---------------------------------------------------------------------------
 
-"""Abstract base for transformer initial thermal state."""
-abstract type InitialState end
-
-"""Start the simulation from cold (ambient temperature)."""
+"""Initialise the simulation from cold — all temperatures equal to ambient."""
 struct ColdStart <: InitialState end
 
-"""Start with a known top-oil temperature [°C]."""
-struct InitialTopOilTemp <: InitialState
-    temp::Float64
+"""Initialise the simulation from a known top-oil temperature `θ_oil` [°C]."""
+struct InitialTopOil <: InitialState
+    θ_oil::Float64
 end
 
-"""Start at the steady-state temperatures for a given initial load [p.u.]."""
+"""
+Initialise the simulation at the steady-state temperatures corresponding to a
+constant load factor `K` [p.u.].
+"""
 struct InitialLoad <: InitialState
-    load::Float64
+    K::Float64
 end
 
 # ---------------------------------------------------------------------------
-# Transformer specifications
+# Shared oil/thermal parameters (composition target)
 # ---------------------------------------------------------------------------
 
 """
-Full resolved specification for a single-winding (power or distribution) transformer.
+IEC 60076-7 oil and thermal-model parameters shared by all transformer types.
 
-All thermal parameters follow IEC 60076-7 notation.
-
-# Fields
-- `no_load_loss`: Iron/core loss [W]
-- `load_loss`: Copper/short-circuit loss at rated load [W]
-- `nom_load`: Nominal current, secondary side [A]
-- `Δθ_amb`: Constant ambient temperature surcharge to account for enclosure or
-  environment [K]
-- `add_surcharge_to_ambient`: If `true` (power transformer), the surcharge is added
-  to the ambient temperature as a fixed offset. If `false` (distribution transformer),
-  the surcharge is included in the top-oil rise pre-factor and scales with load.
-- `τ_oil`: Oil thermal time constant τₒ [min]
-- `Δθ_or`: Rated top-oil temperature rise Δθₒᵣ [K]
-- `k₁₁`: IEC oil constant k₁₁ [-]
-- `k₂₁`: IEC winding constant k₂₁ [-]
-- `k₂₂`: IEC winding constant k₂₂ [-]
-- `x_oil`: Oil viscosity exponent [-]
-- `y_wdg`: Winding gradient exponent [-]
-- `Δθ_end`: Reduction applied to the steady-state end temperature [K]
-- `g_r`: Winding-to-oil temperature gradient gᵣ [K]
-- `τ_w`: Winding thermal time constant τ_w [min]
-- `H`: Hot-spot factor H [-]
+| Symbol  | Quantity                                       | Unit |
+|---------|------------------------------------------------|------|
+| `Δθ_amb`| Ambient temperature surcharge                  | K    |
+| `τ_oil` | Oil thermal time constant τₒ                   | min  |
+| `Δθ_or` | Rated top-oil temperature rise Δθₒᵣ            | K    |
+| `k₁₁`   | IEC oil thermal model constant                 | —    |
+| `k₂₁`   | IEC winding thermal model constant             | —    |
+| `k₂₂`   | IEC winding thermal model constant             | —    |
+| `x`     | Oil viscosity exponent                         | —    |
+| `y`     | Winding gradient exponent                      | —    |
+| `Δθ_end`| Reduction applied to the steady-state end temp | K    |
 """
-@kwdef struct TransformerSpec
-    no_load_loss::Float64
-    load_loss::Float64
-    nom_load::Float64
+@kwdef struct OilSpec
     Δθ_amb::Float64
-    add_surcharge_to_ambient::Bool
     τ_oil::Float64
     Δθ_or::Float64
     k₁₁::Float64
     k₂₁::Float64
     k₂₂::Float64
-    x_oil::Float64
-    y_wdg::Float64
+    x::Float64
+    y::Float64
     Δθ_end::Float64
-    g_r::Float64
-    τ_w::Float64
-    H::Float64
 end
 
-"""
-Specification for a single winding in a three-winding transformer.
+# Accessors on the abstract type — delegate to the embedded OilSpec.
+# Concrete subtypes satisfy this interface by having an `oil` field.
+oil(s::AbstractTransformerSpec) = s.oil
+Δθ_amb(s::AbstractTransformerSpec) = s.oil.Δθ_amb
+τ_oil(s::AbstractTransformerSpec) = s.oil.τ_oil
+Δθ_or(s::AbstractTransformerSpec) = s.oil.Δθ_or
+k₁₁(s::AbstractTransformerSpec) = s.oil.k₁₁
+k₂₁(s::AbstractTransformerSpec) = s.oil.k₂₁
+k₂₂(s::AbstractTransformerSpec) = s.oil.k₂₂
+x(s::AbstractTransformerSpec) = s.oil.x
+y(s::AbstractTransformerSpec) = s.oil.y
+Δθ_end(s::AbstractTransformerSpec) = s.oil.Δθ_end
 
-# Fields
-- `nom_load`: Nominal current [A]
-- `nom_power`: Nominal apparent power [MVA]
-- `g_r`: Winding-to-oil temperature gradient gᵣ [K]
-- `τ_w`: Winding thermal time constant τ_w [min]
-- `H`: Hot-spot factor H [-]
+# ---------------------------------------------------------------------------
+# Winding specification
+# ---------------------------------------------------------------------------
+
+"""
+Thermal specification for a single winding (IEC 60076-7).
+
+| Symbol | Quantity                          | Unit |
+|--------|-----------------------------------|------|
+| `I_r`  | Rated current                     | A    |
+| `S_r`  | Rated apparent power              | MVA  |
+| `g_r`  | Rated winding-to-oil gradient gᵣ  | K    |
+| `τ_w`  | Winding thermal time constant τ_w | min  |
+| `H`    | Hot-spot factor H                 | —    |
 """
 @kwdef struct WindingSpec
-    nom_load::Float64
-    nom_power::Float64
+    I_r::Float64
+    S_r::Float64
+    g_r::Float64
+    τ_w::Float64
+    H::Float64
+end
+
+# ---------------------------------------------------------------------------
+# Default specifications
+# ---------------------------------------------------------------------------
+
+"""
+Catalogue defaults for a two-winding transformer. Fields mirror the optional
+thermal parameters of [`TransformerSpec`](@ref) and [`OilSpec`](@ref); see
+those types for symbol definitions.
+"""
+@kwdef struct DefaultTransformerSpec
+    oil::OilSpec
     g_r::Float64
     τ_w::Float64
     H::Float64
 end
 
 """
-Full resolved specification for a three-winding transformer.
-
-The top-oil temperature is governed by shared oil parameters. Each winding has its
-own hot-spot parameters. The total load loss is either user-supplied or derived from
-pairwise losses using the IEC star-circuit decomposition.
-
-# Fields
-- `no_load_loss`: Iron/core loss [W]
-- `Δθ_amb`: Constant ambient temperature surcharge [K]
-- `τ_oil`: Oil thermal time constant τₒ [min]
-- `Δθ_or`: Rated top-oil temperature rise Δθₒᵣ [K]
-- `k₁₁`: IEC oil constant k₁₁ [-]
-- `k₂₁`: IEC winding constant k₂₁ [-]
-- `k₂₂`: IEC winding constant k₂₂ [-]
-- `x_oil`: Oil viscosity exponent [-]
-- `y_wdg`: Winding gradient exponent [-]
-- `Δθ_end`: Reduction applied to the steady-state end temperature [K]
-- `lv_winding`, `mv_winding`, `hv_winding`: Per-winding specifications
-- `load_loss_hv_lv`: Load loss between HV and LV windings [W]
-- `load_loss_hv_mv`: Load loss between HV and MV windings [W]
-- `load_loss_mv_lv`: Load loss between MV and LV windings [W]
-- `load_loss_total`: User-supplied total load loss [W], or `nothing` to compute it.
+Catalogue defaults for a three-winding transformer. Top-level oil parameters
+are grouped in `oil`; per-winding defaults are nested as [`WindingSpec`](@ref)
+values under `lv`, `mv`, and `hv` (with `I_r = 0` and `S_r = 0` as sentinels
+since those are always supplied by the user).
 """
-@kwdef struct ThreeWindingTransformerSpec
-    no_load_loss::Float64
-    Δθ_amb::Float64
-    τ_oil::Float64
-    Δθ_or::Float64
-    k₁₁::Float64
-    k₂₁::Float64
-    k₂₂::Float64
-    x_oil::Float64
-    y_wdg::Float64
-    Δθ_end::Float64
-    lv_winding::WindingSpec
-    mv_winding::WindingSpec
-    hv_winding::WindingSpec
-    load_loss_hv_lv::Float64
-    load_loss_hv_mv::Float64
-    load_loss_mv_lv::Float64
-    load_loss_total::Union{Float64,Nothing} = nothing
+@kwdef struct DefaultThreeWindingSpec
+    oil::OilSpec
+    lv::WindingSpec
+    mv::WindingSpec
+    hv::WindingSpec
 end
 
 # ---------------------------------------------------------------------------
-# Input profiles
+# Concrete transformer specifications
 # ---------------------------------------------------------------------------
 
 """
-Input profile for a single-winding transformer simulation.
+Fully resolved thermal specification for a two-winding transformer (IEC 60076-7).
 
-# Fields
-- `time`: Datetime timestamps, must be strictly sorted [DateTime]
-- `load`: Per-unit load profile (≥ 0) relative to nominal current [-]
-- `ambient`: Ambient temperature profile [°C]
-- `top_oil`: Optional measured top-oil temperature profile [°C]
+| Symbol      | Quantity                                        | Unit |
+|-------------|-------------------------------------------------|------|
+| `P_fe`      | No-load (iron/core) loss                        | W    |
+| `P_cu`      | Load (copper/short-circuit) loss at rated load  | W    |
+| `I_r`       | Rated current, secondary side                   | A    |
+| `scale_amb` | `true`: `Δθ_amb` is a fixed offset added to     |      |
+|             | ambient (power transformer). `false`: folded    |      |
+|             | into the top-oil rise pre-factor, scales with   |      |
+|             | load (distribution transformer).                |      |
+| `g_r`       | Rated winding-to-oil temperature gradient gᵣ    | K    |
+| `τ_w`       | Winding thermal time constant τ_w               | min  |
+| `H`         | Hot-spot factor H                               | —    |
+| `oil`       | Shared oil and thermal-model parameters         |      |
 """
-struct InputProfile
-    time::Vector{DateTime}
-    load::Vector{Float64}
-    ambient::Vector{Float64}
-    top_oil::Union{Vector{Float64},Nothing}
-
-    function InputProfile(time, load, ambient, top_oil = nothing)
-        time = collect(DateTime, time)
-        load = collect(Float64, load)
-        ambient = collect(Float64, ambient)
-        n = length(time)
-        length(load) == n ||
-            throw(ArgumentError("load length $(length(load)) ≠ time length $n"))
-        length(ambient) == n ||
-            throw(ArgumentError("ambient length $(length(ambient)) ≠ time length $n"))
-        issorted(time) || throw(ArgumentError("time must be sorted"))
-        any(<(0), load) &&
-            throw(ArgumentError("load profile must not contain negative values"))
-        if top_oil !== nothing
-            top_oil = collect(Float64, top_oil)
-            length(top_oil) == n ||
-                throw(ArgumentError("top_oil length $(length(top_oil)) ≠ time length $n"))
-        end
-        return new(time, load, ambient, top_oil)
-    end
+@kwdef struct TransformerSpec <: AbstractTransformerSpec
+    P_fe::Float64
+    P_cu::Float64
+    I_r::Float64
+    scale_amb::Bool
+    g_r::Float64
+    τ_w::Float64
+    H::Float64
+    oil::OilSpec
 end
 
 """
-Input profile for a three-winding transformer simulation.
+    TransformerSpec(P_fe, P_cu, I_r, scale_amb, d; kwargs...)
 
-# Fields
-- `time`: Datetime timestamps, must be strictly sorted [DateTime]
-- `load_hv`: Per-unit load profile, high-voltage side (≥ 0) [-]
-- `load_mv`: Per-unit load profile, medium-voltage side (≥ 0) [-]
-- `load_lv`: Per-unit load profile, low-voltage side (≥ 0) [-]
-- `ambient`: Ambient temperature profile [°C]
-- `top_oil`: Optional measured top-oil temperature profile [°C]
+Construct a [`TransformerSpec`](@ref) from type-plate measurements and a
+[`DefaultTransformerSpec`](@ref). Any field can be overridden via keyword
+arguments; fields not supplied take their value from `d`.
 """
-struct ThreeWindingInputProfile
-    time::Vector{DateTime}
-    load_hv::Vector{Float64}
-    load_mv::Vector{Float64}
-    load_lv::Vector{Float64}
-    ambient::Vector{Float64}
-    top_oil::Union{Vector{Float64},Nothing}
+function TransformerSpec(
+    P_fe::Float64,
+    P_cu::Float64,
+    I_r::Float64,
+    scale_amb::Bool,
+    d::DefaultTransformerSpec;
+    kwargs...,
+)
+    TransformerSpec(; P_fe, P_cu, I_r, scale_amb, g_r = d.g_r, τ_w = d.τ_w, H = d.H, oil = d.oil, kwargs...)
+end
 
-    function ThreeWindingInputProfile(
-        time,
-        load_hv,
-        load_mv,
-        load_lv,
-        ambient,
-        top_oil = nothing,
+"""
+Fully resolved thermal specification for a three-winding transformer (IEC 60076-7).
+
+Top-oil dynamics are governed by the shared `oil` parameters. Each winding carries
+its own hot-spot parameters. `P_ll_total` is either supplied directly or computed
+from the pairwise losses via the IEC star-circuit decomposition: the transformer is
+represented as three series impedances meeting at a fictitious internal node, and
+the individual winding losses are recovered by solving that circuit.
+
+| Symbol         | Quantity                                       | Unit |
+|----------------|------------------------------------------------|------|
+| `P_fe`         | No-load (iron/core) loss                       | W    |
+| `lv`,`mv`,`hv` | Per-winding thermal specifications             |      |
+| `P_ll_hv_lv`   | Short-circuit loss, HV–LV winding pair         | W    |
+| `P_ll_hv_mv`   | Short-circuit loss, HV–MV winding pair         | W    |
+| `P_ll_mv_lv`   | Short-circuit loss, MV–LV winding pair         | W    |
+| `P_ll_total`   | Total load loss at rated current               | W    |
+| `oil`          | Shared oil and thermal-model parameters        |      |
+"""
+@kwdef struct ThreeWindingSpec <: AbstractTransformerSpec
+    P_fe::Float64
+    lv::WindingSpec
+    mv::WindingSpec
+    hv::WindingSpec
+    P_ll_hv_lv::Float64
+    P_ll_hv_mv::Float64
+    P_ll_mv_lv::Float64
+    P_ll_total::Float64
+    oil::OilSpec
+end
+
+"""
+    ThreeWindingSpec(P_fe, lv, mv, hv, P_ll_hv_lv, P_ll_hv_mv, P_ll_mv_lv, d;
+                     P_ll_total=nothing, kwargs...)
+
+Construct a [`ThreeWindingSpec`](@ref) from type-plate measurements and a
+[`DefaultThreeWindingSpec`](@ref). Any field can be overridden via keyword
+arguments. When `P_ll_total` is not supplied it is derived from the three
+pairwise short-circuit losses using the IEC star-circuit decomposition.
+"""
+function ThreeWindingSpec(
+    P_fe::Float64,
+    lv::WindingSpec,
+    mv::WindingSpec,
+    hv::WindingSpec,
+    P_ll_hv_lv::Float64,
+    P_ll_hv_mv::Float64,
+    P_ll_mv_lv::Float64,
+    d::DefaultThreeWindingSpec;
+    P_ll_total = nothing,
+    kwargs...,
+)
+    c₁ = (mv.S_r / hv.S_r)^2
+    c₂ = (lv.S_r / mv.S_r)^2
+
+    P_ll_hc = (0.5 / c₁) * (P_ll_hv_mv - (1 / c₂) * P_ll_mv_lv + (1 / c₂) * P_ll_hv_lv)
+    P_ll_mc = (0.5 / c₂) * (c₂ * P_ll_hv_mv - P_ll_hv_lv + P_ll_mv_lv)
+    P_ll_lc = 0.5 * (P_ll_hv_lv - c₂ * P_ll_hv_mv + P_ll_mv_lv)
+
+    resolved_total = isnothing(P_ll_total) ? P_ll_hc + P_ll_mc + P_ll_lc + P_fe : P_ll_total
+
+    ThreeWindingSpec(;
+        P_fe,
+        lv,
+        mv,
+        hv,
+        P_ll_hv_lv,
+        P_ll_hv_mv,
+        P_ll_mv_lv,
+        P_ll_total = resolved_total,
+        oil = d.oil,
+        kwargs...,
     )
-        time = collect(DateTime, time)
-        load_hv = collect(Float64, load_hv)
-        load_mv = collect(Float64, load_mv)
-        load_lv = collect(Float64, load_lv)
-        ambient = collect(Float64, ambient)
-        n = length(time)
-        for (name, v) in (
-            ("load_hv", load_hv),
-            ("load_mv", load_mv),
-            ("load_lv", load_lv),
-            ("ambient", ambient),
-        )
-            length(v) == n ||
-                throw(ArgumentError("$name length $(length(v)) ≠ time length $n"))
-        end
-        issorted(time) || throw(ArgumentError("time must be sorted"))
-        for (name, v) in (("load_hv", load_hv), ("load_mv", load_mv), ("load_lv", load_lv))
-            any(<(0), v) && throw(ArgumentError("$name must not contain negative values"))
-        end
-        if top_oil !== nothing
-            top_oil = collect(Float64, top_oil)
-            length(top_oil) == n ||
-                throw(ArgumentError("top_oil length $(length(top_oil)) ≠ time length $n"))
-        end
-        return new(time, load_hv, load_mv, load_lv, ambient, top_oil)
-    end
 end
 
 # ---------------------------------------------------------------------------
-# Simulation results
+# Winding accessor
 # ---------------------------------------------------------------------------
 
 """
-Thermal simulation result for a single-winding transformer.
-
-# Fields
-- `time`: Datetime timestamps [DateTime]
-- `top_oil`: Top-oil temperature profile [°C]
-- `hot_spot`: Hot-spot temperature profile [°C]
+Return the windings as a tuple of [`WindingSpec`](@ref) values.
+Use `getfield.(windings(s), :g_r)` etc. to extract any field uniformly across
+transformer types.
 """
-struct ThermalResult
-    time::Vector{DateTime}
-    top_oil::Vector{Float64}
-    hot_spot::Vector{Float64}
-end
-
-"""
-Thermal simulation result for a three-winding transformer.
-
-# Fields
-- `time`: Datetime timestamps [DateTime]
-- `top_oil`: Top-oil temperature profile [°C]
-- `hot_spot_lv`: Hot-spot temperature, low-voltage winding [°C]
-- `hot_spot_mv`: Hot-spot temperature, medium-voltage winding [°C]
-- `hot_spot_hv`: Hot-spot temperature, high-voltage winding [°C]
-"""
-struct ThreeWindingThermalResult
-    time::Vector{DateTime}
-    top_oil::Vector{Float64}
-    hot_spot_lv::Vector{Float64}
-    hot_spot_mv::Vector{Float64}
-    hot_spot_hv::Vector{Float64}
-end
+windings(s::ThreeWindingSpec) = (s.lv, s.mv, s.hv)
