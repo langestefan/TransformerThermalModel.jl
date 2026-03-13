@@ -171,7 +171,17 @@ function TransformerSpec(
     d::DefaultTransformerSpec;
     kwargs...,
 )
-    TransformerSpec(; P_fe, P_cu, I_r, scale_amb, g_r = d.g_r, τ_w = d.τ_w, H = d.H, oil = d.oil, kwargs...)
+    TransformerSpec(;
+        P_fe,
+        P_cu,
+        I_r,
+        scale_amb,
+        g_r = d.g_r,
+        τ_w = d.τ_w,
+        H = d.H,
+        oil = d.oil,
+        kwargs...,
+    )
 end
 
 """
