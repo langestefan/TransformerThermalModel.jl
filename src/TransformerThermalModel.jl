@@ -1,6 +1,9 @@
 module TransformerThermalModel
 
 using Dates
+import ModelingToolkitBase as MTK
+using ModelingToolkitBase: t_nounits as t, D_nounits as D, @variables
+using ModelingToolkitInputs: InputSystem, Input
 
 # ---------------------------------------------------------------------------
 # Top-level abstract types and spec structs (no dependencies)
@@ -50,5 +53,8 @@ export windings
 # Thermal model simulation
 # ---------------------------------------------------------------------------
 include("model.jl")
+
+export thermal_system, initial_conditions
+export Input  # re-export for user convenience
 
 end

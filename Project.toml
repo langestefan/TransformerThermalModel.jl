@@ -8,9 +8,11 @@ projects = ["test", "docs"]
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+ModelingToolkitBase = "7771a370-6774-4173-bd38-47e70ca0b839"
+ModelingToolkitInputs = "9c47c465-b61a-4984-aca2-8d7e8f154266"
 
 [compat]
 Dates = "1.11.0"
-ModelingToolkit = "11.14.0"
+ModelingToolkitBase = "1.22.0"
+ModelingToolkitInputs = "0.2"
 julia = "1.10"
