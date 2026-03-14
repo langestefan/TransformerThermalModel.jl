@@ -36,7 +36,7 @@ tr_onaf = PowerTransformer{ONAF}(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0, τ_w 
 ## 2. Build the thermal ODE system
 
 [`thermal_system`](@ref) returns a compiled `InputSystem` (a
-[ModelingToolkitInputs.jl](https://github.com/JuliaSMLM/ModelingToolkitInputs.jl)
+[ModelingToolkitInputs.jl](https://github.com/bradcarman/ModelingToolkitInputs.jl)
 wrapper around a [ModelingToolkit.jl](https://docs.sciml.ai/ModelingToolkit/stable/)
 `System`).  Time is in **minutes**.
 
