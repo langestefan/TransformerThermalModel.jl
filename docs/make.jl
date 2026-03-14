@@ -1,5 +1,6 @@
 using TransformerThermalModel
 using Documenter
+using DocumenterVitepress
 
 DocMeta.setdocmeta!(
     TransformerThermalModel,
@@ -68,10 +69,11 @@ makedocs(;
     authors = "Stefan de Lange <langestefan@msn.com>",
     repo = "https://github.com/langestefan/TransformerThermalModel.jl/blob/{commit}{path}#{line}",
     sitename = "TransformerThermalModel.jl",
-    format = Documenter.HTML(;
-        canonical = "https://langestefan.github.io/TransformerThermalModel.jl",
+    format = DocumenterVitepress.MarkdownVitepress(;
+        repo = "github.com/langestefan/TransformerThermalModel.jl",
+        devbranch = "main",
     ),
     pages = list_pages(),
 )
 
-deploydocs(; repo = "github.com/langestefan/TransformerThermalModel.jl")
+DocumenterVitepress.deploydocs(; repo = "github.com/langestefan/TransformerThermalModel.jl")
