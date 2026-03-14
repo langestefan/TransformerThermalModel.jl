@@ -10,52 +10,43 @@ on:
       - "*.toml"
     tags: ["*"]
   pull_request:
-    branches:
-      - main
     paths:
       - "docs/**"
       - "src/**"
       - "*.toml"
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  statuses: write
 
 concurrency:
-  # Skip intermediate builds: always.
-  # Cancel intermediate builds: only if it is a pull request build.
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   docs:
     name: Documentation
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v2
-        with:
-          version: "1"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Use Julia cache
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@v2
+      - name: Load Julia packages from cache
+        id: julia-cache
         uses: julia-actions/cache@v2
-      - name: Instantiate environment with development version of the package
-        run: |
-          julia --project=docs -e '
-            using Pkg
-            Pkg.develop(PackageSpec(path=pwd()))
-            Pkg.instantiate()'
-      - name: Run doctest
-        run: |
-          julia --project=docs -e '
-            using Documenter: DocMeta, doctest
-            using TransformerThermalModel
-            DocMeta.setdocmeta!(TransformerThermalModel, :DocTestSetup, :(using TransformerThermalModel); recursive=true)
-            doctest(TransformerThermalModel)'
-      - name: Generate and deploy documentation
-        run: julia --project=docs docs/make.jl
+      - name: Build and deploy docs
+        uses: julia-actions/julia-docdeploy@v1
         env:
-          JULIA_PKG_SERVER: ""
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GKSwstype: "100" # https://discourse.julialang.org/t/generation-of-documentation-fails-qt-qpa-xcb-could-not-connect-to-display/60988
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+          GKSwstype: "100"
+          JULIA_DEBUG: "Documenter"
+      - name: Save Julia depot cache on cancel or failure
+        if: cancelled() || failure()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ steps.julia-cache.outputs.cache-paths }}
+          key: ${{ steps.julia-cache.outputs.cache-key }}
