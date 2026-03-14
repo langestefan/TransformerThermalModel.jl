@@ -67,13 +67,17 @@ end
 makedocs(;
     modules = [TransformerThermalModel],
     authors = "Stefan de Lange <langestefan@msn.com>",
-    repo = "https://github.com/langestefan/TransformerThermalModel.jl/blob/{commit}{path}#{line}",
     sitename = "TransformerThermalModel",
     format = DocumenterVitepress.MarkdownVitepress(;
         repo = "github.com/langestefan/TransformerThermalModel.jl",
         devbranch = "main",
+        devurl = "dev",
     ),
     pages = list_pages(),
 )
 
-DocumenterVitepress.deploydocs(; repo = "github.com/langestefan/TransformerThermalModel.jl")
+DocumenterVitepress.deploydocs(;
+    repo = "github.com/langestefan/TransformerThermalModel.jl",
+    devbranch = "main",
+    push_preview = true,
+)
