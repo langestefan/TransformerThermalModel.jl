@@ -12,7 +12,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /15-constants
+      link: /10-tutorial
     - theme: alt
       text: Default Parameters
       link: /20-default-parameters
@@ -32,7 +32,7 @@ features:
   - icon: 🔧
     title: Composable data model
     details: TransformerSpec, OilSpec, and WindingSpec compose cleanly. Defaults merge with nameplate data via Julia's multiple dispatch.
-    link: /95-reference
+    link: /10-tutorial
 ---
 ```
 
@@ -51,17 +51,25 @@ It computes top-oil and hot-spot temperatures under arbitrary load profiles.
 
 ```julia
 using TransformerThermalModel
+using OrdinaryDiffEq
 
 # One-step construction — nameplate data + IEC defaults merged automatically
-tr = PowerTransformer{ONAN}(P_fe = 800.0, P_cu = 8500.0, I_r = 630.0)
+tr  = PowerTransformer{ONAN}(P_fe = 800.0, P_cu = 8500.0, I_r = 630.0)
 
-# Accessors follow IEC notation
-τ_oil(tr)   # → 210.0 min  (ONAN default)
-Δθ_or(tr)   # → 60.0 K
-g_r(tr)     # → 17.0 K
+# Build the continuous-time IEC 60076-7 ODE system (time unit: minutes)
+sys = thermal_system(tr)
 
-# Override any default at construction time
-tr2 = PowerTransformer{ONAF}(P_fe = 800.0, P_cu = 8500.0, I_r = 630.0, τ_oil = 120.0)
+# Solve from a cold start under rated load for 24 h
+u0   = initial_conditions(sys, tr, ColdStart())
+prob = ODEProblem(sys, u0, (0.0, 1440.0))
+
+K_in = Input(sys.K,   [1.0, 1.0], [0.0, 1440.0])
+θ_in = Input(sys.θ_a, [20.0, 20.0], [0.0, 1440.0])
+
+sol = solve(prob, Tsit5(); inputs = [K_in, θ_in])
+
+sol(1440.0; idxs = sys.θ_oil)   # top-oil temperature at t = 24 h
+sol(1440.0; idxs = sys.θ_H)     # hot-spot temperature at t = 24 h
 ```
 
 ```@raw html
