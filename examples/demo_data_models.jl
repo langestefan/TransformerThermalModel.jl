@@ -75,6 +75,9 @@ println(tr_3w)
 println()
 println("Compact form:")
 io_compact = IOContext(stdout, :compact => true)
-print(io_compact, tr_onan); println()
-print(io_compact, tr_dist); println()
-print(io_compact, tr_3w); println()
+print(io_compact, tr_onan);
+println()
+print(io_compact, tr_dist);
+println()
+print(io_compact, tr_3w);
+println()

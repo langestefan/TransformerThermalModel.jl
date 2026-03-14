@@ -1,4 +1,6 @@
 using TransformerThermalModel
 using TestItemRunner
 
-@run_package_tests verbose=true
+include("linting.jl")
+
+@run_package_tests verbose = true
