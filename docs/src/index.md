@@ -49,8 +49,6 @@ It computes top-oil and hot-spot temperatures under arbitrary load profiles.
 <h2>Quick start</h2>
 ```
 
-Welcome!
-
 ```julia
 using TransformerThermalModel
 
