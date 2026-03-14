@@ -108,3 +108,117 @@ x(t::TransformerKind) = x(spec(t))
 y(t::TransformerKind) = y(spec(t))
 Δθ_end(t::TransformerKind) = Δθ_end(spec(t))
 windings(t::ThreeWindingTransformer) = windings(spec(t))
+
+# ---------------------------------------------------------------------------
+# Pretty-printing
+# ---------------------------------------------------------------------------
+
+function _show_oil_tree(io::IO, o::OilSpec, cont::String)
+    println(io, cont, "├ τ_oil:  ", o.τ_oil, " min")
+    println(io, cont, "├ Δθ_or:  ", o.Δθ_or, " K")
+    println(io, cont, "├ Δθ_amb: ", o.Δθ_amb, " K")
+    println(io, cont, "├ k₁₁:    ", o.k₁₁)
+    println(io, cont, "├ k₂₁:    ", o.k₂₁)
+    println(io, cont, "├ k₂₂:    ", o.k₂₂)
+    println(io, cont, "├ x:      ", o.x)
+    println(io, cont, "├ y:      ", o.y)
+    print(io, cont, "└ Δθ_end: ", o.Δθ_end, " K")
+end
+
+function _show_winding_tree(io::IO, w::WindingSpec, cont::String)
+    println(io, cont, "├ I_r: ", w.I_r, " A")
+    println(io, cont, "├ S_r: ", w.S_r, " MVA")
+    println(io, cont, "├ g_r: ", w.g_r, " K")
+    println(io, cont, "├ τ_w: ", w.τ_w, " min")
+    print(io, cont, "└ H:   ", w.H)
+end
+
+function Base.show(io::IO, tr::PowerTransformer{C}) where {C}
+    s = tr.spec
+    if get(io, :compact, false)
+        print(
+            io,
+            "PowerTransformer{",
+            C,
+            "}(P_fe=",
+            s.P_fe,
+            " W, P_cu=",
+            s.P_cu,
+            " W, I_r=",
+            s.I_r,
+            " A)",
+        )
+        return
+    end
+    println(io, "PowerTransformer{", C, "}")
+    println(io, "├ P_fe:      ", s.P_fe, " W")
+    println(io, "├ P_cu:      ", s.P_cu, " W")
+    println(io, "├ I_r:       ", s.I_r, " A")
+    println(io, "├ scale_amb: ", s.scale_amb)
+    println(io, "├ g_r:       ", s.g_r, " K")
+    println(io, "├ τ_w:       ", s.τ_w, " min")
+    println(io, "├ H:         ", s.H)
+    println(io, "└ oil:")
+    _show_oil_tree(io, s.oil, "   ")
+end
+
+function Base.show(io::IO, tr::DistributionTransformer)
+    s = tr.spec
+    if get(io, :compact, false)
+        print(
+            io,
+            "DistributionTransformer(P_fe=",
+            s.P_fe,
+            " W, P_cu=",
+            s.P_cu,
+            " W, I_r=",
+            s.I_r,
+            " A)",
+        )
+        return
+    end
+    println(io, "DistributionTransformer")
+    println(io, "├ P_fe:      ", s.P_fe, " W")
+    println(io, "├ P_cu:      ", s.P_cu, " W")
+    println(io, "├ I_r:       ", s.I_r, " A")
+    println(io, "├ scale_amb: ", s.scale_amb)
+    println(io, "├ g_r:       ", s.g_r, " K")
+    println(io, "├ τ_w:       ", s.τ_w, " min")
+    println(io, "├ H:         ", s.H)
+    println(io, "└ oil:")
+    _show_oil_tree(io, s.oil, "   ")
+end
+
+function Base.show(io::IO, tr::ThreeWindingTransformer{C}) where {C}
+    s = tr.spec
+    if get(io, :compact, false)
+        print(
+            io,
+            "ThreeWindingTransformer{",
+            C,
+            "}(P_fe=",
+            s.P_fe,
+            " W, P_ll_total=",
+            s.P_ll_total,
+            " W)",
+        )
+        return
+    end
+    println(io, "ThreeWindingTransformer{", C, "}")
+    println(io, "├ P_fe:       ", s.P_fe, " W")
+    println(io, "├ P_ll_hv_lv: ", s.P_ll_hv_lv, " W")
+    println(io, "├ P_ll_hv_mv: ", s.P_ll_hv_mv, " W")
+    println(io, "├ P_ll_mv_lv: ", s.P_ll_mv_lv, " W")
+    println(io, "├ P_ll_total: ", s.P_ll_total, " W")
+    println(io, "├ lv:")
+    _show_winding_tree(io, s.lv, "│  ")
+    println(io)
+    println(io, "├ mv:")
+    _show_winding_tree(io, s.mv, "│  ")
+    println(io)
+    println(io, "├ hv:")
+    _show_winding_tree(io, s.hv, "│  ")
+    println(io)
+    println(io, "└ oil:")
+    _show_oil_tree(io, s.oil, "   ")
+end

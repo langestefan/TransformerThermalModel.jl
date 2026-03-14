@@ -70,9 +70,12 @@ end
     )
 
     @test PowerTransformer(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa TransformerKind
-    @test PowerTransformer{ONAN}(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa TransformerKind
-    @test PowerTransformer{ONAF}(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa TransformerKind
-    @test DistributionTransformer(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa TransformerKind
+    @test PowerTransformer{ONAN}(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa
+          TransformerKind
+    @test PowerTransformer{ONAF}(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa
+          TransformerKind
+    @test DistributionTransformer(P_fe = 100.0, P_cu = 5000.0, I_r = 400.0) isa
+          TransformerKind
     @test ThreeWindingTransformer(; tw_kwargs...) isa TransformerKind
     @test ThreeWindingTransformer{ONAF}(; tw_kwargs...) isa TransformerKind
 
@@ -90,7 +93,8 @@ end
 
 @testitem "default_spec(PowerTransformer{ONAN}) — IEC 60076-7 power ONAN defaults" tags =
     [:unit, :fast] begin
-    using TransformerThermalModel: ONAN, PowerTransformer, DefaultTransformerSpec, default_spec
+    using TransformerThermalModel:
+        ONAN, PowerTransformer, DefaultTransformerSpec, default_spec
 
     # explicit and default type produce identical results
     @test default_spec(PowerTransformer{ONAN}) == default_spec(PowerTransformer{ONAN})
@@ -110,7 +114,8 @@ end
 
 @testitem "default_spec(PowerTransformer{ONAF}) — IEC 60076-7 power ONAF defaults" tags =
     [:unit, :fast] begin
-    using TransformerThermalModel: ONAF, PowerTransformer, DefaultTransformerSpec, default_spec
+    using TransformerThermalModel:
+        ONAF, PowerTransformer, DefaultTransformerSpec, default_spec
 
     d = default_spec(PowerTransformer{ONAF})
 
@@ -153,7 +158,8 @@ end
         ONAN, ThreeWindingTransformer, DefaultThreeWindingSpec, default_spec
 
     # explicit and default type produce identical results
-    @test default_spec(ThreeWindingTransformer{ONAN}) == default_spec(ThreeWindingTransformer{ONAN})
+    @test default_spec(ThreeWindingTransformer{ONAN}) ==
+          default_spec(ThreeWindingTransformer{ONAN})
 
     d = default_spec(ThreeWindingTransformer{ONAN})
 
@@ -189,7 +195,8 @@ end
 
 @testitem "default_spec + TransformerSpec — round-trip for power transformer" tags =
     [:unit, :fast] begin
-    using TransformerThermalModel: ONAN, PowerTransformer, TransformerSpec, default_spec, τ_oil
+    using TransformerThermalModel:
+        ONAN, PowerTransformer, TransformerSpec, default_spec, τ_oil
 
     d = default_spec(PowerTransformer{ONAN})
     spec = TransformerSpec(100.0, 5000.0, 400.0, true, d)
@@ -306,8 +313,8 @@ end
     hv = WindingSpec(I_r = 384.9, S_r = 100.0, g_r = 17.6, τ_w = 7.0, H = 1.3)
 end
 
-@testitem "ThreeWindingTransformer one-step constructor — ONAN defaults" tags = [:unit, :fast] setup =
-    [ThreeWindingFixture] begin
+@testitem "ThreeWindingTransformer one-step constructor — ONAN defaults" tags =
+    [:unit, :fast] setup = [ThreeWindingFixture] begin
     using TransformerThermalModel:
         ONAN, ThreeWindingTransformer, ThreeWindingSpec, spec, τ_oil, windings
 
