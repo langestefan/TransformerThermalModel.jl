@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "TransformerThermalModel.jl"
+  name: "TransformerThermalModel"
   text: "Transformer Thermal Modelling"
   tagline: IEC 60076-7 hot-spot and top-oil temperature calculations for power, distribution, and three-winding transformers.
   image:
